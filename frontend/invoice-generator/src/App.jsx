@@ -11,10 +11,11 @@ import CreateInvoice from "./pages/Invoices/CreateInvoice.jsx";
 import InvoiceDetail from "./pages/Invoices/InvoiceDetail.jsx";
 import { Navigate } from "react-router-dom";
 import ProfilePage from "./pages/Profile/ProfilePage.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 function App() {
   return (
-    <div>
+    <AuthProvider>
       <Router>
         <Routes>
           {/* Public routes */}
@@ -44,7 +45,7 @@ function App() {
           },
         }}
       />
-    </div>
+    </AuthProvider>
   );
 }
 

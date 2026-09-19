@@ -14,6 +14,7 @@ import { API_PATHS } from "../../utils/apiPath";
 import { axiosInstance } from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { FaShieldAlt } from "react-icons/fa";
+import { validateEmail, validatePassword } from "../../utils/helper";
 
 const Login = () => {
   const { login } = useAuth();
@@ -23,25 +24,16 @@ const Login = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+  });
 
-  const validateEmail = (email) => {
-    if (!email) return "Email is required";
-    if (!/\S+@\S+\.\S+/.test(email)) return "Email is invalid";
-    return "";
-  };
-
-  const validatePassword = (password) => {
-    if (!password) return "Password is required";
-    if (password.length < 6) return "Password must be at least 6 characters";
-    return "";
-  };
-
-  const handleInputeChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -60,6 +52,8 @@ const Login = () => {
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
+
+    //validate on blur
     const newFieldErrors = { ...fieldErrors };
     if (name === "email") {
       newFieldErrors.email = validateEmail(value);
@@ -79,9 +73,14 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
+    //prevent default form submission
     if (e) e.preventDefault();
+
+    //reset errors
     setError("");
     setSuccess("");
+
+    //set all fields as touched
     setTouched({ email: true, password: true });
 
     const emailError = validateEmail(formData.email);
@@ -92,19 +91,32 @@ const Login = () => {
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     try {
       const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, formData);
-      const { user, token } = response.data;
-      await login(user, token);
-      setSuccess("Login successful! Redirecting...");
-      toast.success("Login successful!");
-      setTimeout(() => navigate("/dashboard"), 1500);
+
+      if (response.status === 200) {
+        const { user, token } = response.data;
+
+        if (token) {
+          setSuccess("Login successful");
+          login(user, token);
+
+          //Redirect based on user role
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 2000);
+        }
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
-      toast.error(err.response?.data?.message || "Login failed");
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response?.data?.message);
+      } else {
+        setError("An error occurred during login");
+      }
+      setSuccess("");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -113,7 +125,7 @@ const Login = () => {
       <div className="w-full max-w-sm">
         {/* header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-950 to-blue-500 rounded-xl mx-auto mb-6 flex items-center justify-center">
+          <div className="w-12 h-12 bg-linear-to-r from-blue-950 to-blue-500 rounded-xl mx-auto mb-6 flex items-center justify-center">
             <FileText className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl text-center text-gray-900 font-semibold">
@@ -125,7 +137,7 @@ const Login = () => {
         </div>
 
         {/* Form */}
-        <div className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className=" block text-sm font-medium text-gray-700 mb-2">
               Email
@@ -137,7 +149,7 @@ const Login = () => {
                 name="email"
                 required
                 value={formData.email}
-                onChange={handleInputeChange}
+                onChange={handleInputChange}
                 onBlur={handleBlur}
                 className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:border-transparent outline-none transition-all 
                      ${
@@ -166,7 +178,7 @@ const Login = () => {
                 name="password"
                 required
                 value={formData.password}
-                onChange={handleInputeChange}
+                onChange={handleInputChange}
                 onBlur={handleBlur}
                 className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all 
                      ${
@@ -211,12 +223,11 @@ const Login = () => {
 
           {/* sign In button */}
           <button
-            onClick={handleSubmit}
             type="submit"
-            disabled={loading || !isFormValid()}
-            className="w-full bg-gradient-to-r from-blue-950 to-blue-900 text-white py-3 px-3 rounded-lg font-medium hover:bg-gray-800  hover:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center  "
+            disabled={isLoading || !isFormValid()}
+            className="group w-full bg-linear-to-r from-blue-950 to-blue-900 text-white py-3 px-3 rounded-lg font-medium hover:from-blue-900 hover:to-blue-800 disabled:from-gray-300 disabled:to-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all flex items-center justify-center"
           >
-            {loading ? (
+            {isLoading ? (
               <>
                 {" "}
                 <Loader2 className="animate-spin w-4 h-4 mr-2" />
@@ -229,13 +240,16 @@ const Login = () => {
               </>
             )}
           </button>
-        </div>
+        </form>
 
         {/* footer */}
-        <div className="">
-          <p className="">
+        <div className="mt-6 pt-4 border-t border-gray-200 text-center">
+          <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <button onClick={() => navigate("/signup")} className="">
+            <button
+              onClick={() => navigate("/signup")}
+              className="text-black hover:underline font-medium ml-1"
+            >
               Sign up
             </button>
           </p>

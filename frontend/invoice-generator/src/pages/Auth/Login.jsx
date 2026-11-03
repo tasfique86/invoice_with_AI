@@ -96,11 +96,11 @@ const Login = () => {
       const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, formData);
 
       if (response.status === 200) {
-        const { user, token } = response.data;
+        const { token } = response.data;
 
         if (token) {
           setSuccess("Login successful");
-          login(user, token);
+          login(response.data, token);
 
           //Redirect based on user role
           setTimeout(() => {

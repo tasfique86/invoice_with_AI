@@ -1,4 +1,12 @@
-import { Sparkles, BarChart2, Mail, FileText } from "lucide-react";
+import {
+  Sparkles,
+  BarChart2,
+  Mail,
+  FileText,
+  LayoutDashboard,
+  Plus,
+  Users,
+} from "lucide-react";
 
 export const FEATURES = [
   {
@@ -74,5 +82,28 @@ export const FAQS = [
   {
     question: "What currencies do you support?",
     answer: "We support all major currencies.",
+  },
+];
+
+export const NAVIGATION_MENU = [
+  {
+    id: "dashboard",
+    name: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    id: "invoices",
+    name: "Invoices",
+    icon: FileText,
+  },
+  {
+    id: "invoices/new",
+    name: "Create Invoice",
+    icon: Plus,
+  },
+  {
+    id: "profile",
+    name: "Profile",
+    icon: Users,
   },
 ];

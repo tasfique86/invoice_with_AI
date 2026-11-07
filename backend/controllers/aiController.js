@@ -116,6 +116,7 @@ const generateReminderEmail = async (req, res) => {
 
 const getDashboardSummary = async (req, res) => {
   try {
+    console.log("Call--------")
     const invoices = await Invoice.find({ user: req.user.id });
     if (invoices.length === 0) {
       return res.status(200).json({

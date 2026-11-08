@@ -12,6 +12,7 @@ const Button = ({
     "inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-1 focus-visibl:ring-2 focus:ring-blue-800 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ";
   const variantClasses = {
     primary: "bg-blue-900 hover:bg-blue-800 text-white",
+    secondary: "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200",
     outline: " bg-white hover:bg-slate-50 text-slate-200",
     ghost: "bg-transparent hover:bg-slate-100 text-slate-700",
   };

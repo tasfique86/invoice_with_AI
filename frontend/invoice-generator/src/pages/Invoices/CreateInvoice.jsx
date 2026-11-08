@@ -9,12 +9,15 @@ import { useAuth } from "../../context/AuthContext";
 import InputField from "../../components/ui/InputField";
 import TextAreaField from "../../components/ui/TextAreaField";
 import Button from "../../components/ui/Button";
+import { Plus, Trash2 } from "lucide-react";
+import SelectedField from "../../components/ui/SelectedField";
 
 const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const invoiceToEdit = existingInvoice ?? location.state?.existingInvoice ?? null;
+  const invoiceToEdit =
+    existingInvoice ?? location.state?.existingInvoice ?? null;
 
   const defaultItem = {
     name: "",
@@ -32,7 +35,8 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
       ? moment(invoiceToEdit.dueDate).format("YYYY-MM-DD")
       : "",
     billFrom: {
-      businessName: user?.businessName || invoiceToEdit?.billFrom?.businessName || "",
+      businessName:
+        user?.businessName || invoiceToEdit?.billFrom?.businessName || "",
       email: user?.email || invoiceToEdit?.billFrom?.email || "",
       address: user?.address || invoiceToEdit?.billFrom?.address || "",
       phone: user?.phone || invoiceToEdit?.billFrom?.phone || "",
@@ -75,7 +79,8 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
           ? moment(invoiceToEdit.dueDate).format("YYYY-MM-DD")
           : "",
         billFrom: {
-          businessName: invoiceToEdit.billFrom?.businessName || user?.businessName || "",
+          businessName:
+            invoiceToEdit.billFrom?.businessName || user?.businessName || "",
           email: invoiceToEdit.billFrom?.email || user?.email || "",
           address: invoiceToEdit.billFrom?.address || user?.address || "",
           phone: invoiceToEdit.billFrom?.phone || user?.phone || "",
@@ -86,7 +91,9 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
           address: invoiceToEdit.billTo?.address || "",
           phone: invoiceToEdit.billTo?.phone || "",
         },
-        items: invoiceToEdit.items?.length ? invoiceToEdit.items : [defaultItem],
+        items: invoiceToEdit.items?.length
+          ? invoiceToEdit.items
+          : [defaultItem],
       });
       setIsGeneratingNumber(false);
       return;
@@ -100,7 +107,10 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
         let maxNum = 0;
 
         invoices.forEach((inv) => {
-          const num = Number.parseInt(inv.invoiceNumber?.split("-")[1] || "0", 10);
+          const num = Number.parseInt(
+            inv.invoiceNumber?.split("-")[1] || "0",
+            10,
+          );
           if (!Number.isNaN(num) && num > maxNum) maxNum = num;
         });
 
@@ -170,7 +180,7 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
 
   const taxTotal = formData.items.reduce((sum, item) => {
     const itemTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
-    return sum + itemTotal * ((Number(item.taxPercent || 0) / 100) || 0);
+    return sum + itemTotal * (Number(item.taxPercent || 0) / 100 || 0);
   }, 0);
 
   const total = subtotal + taxTotal;
@@ -195,7 +205,7 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8 pb-[100vh]">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-slate-900">
           {invoiceToEdit ? "Edit Invoice" : "Create Invoice"}
@@ -233,7 +243,9 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4">
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">Bill From</h3>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            Bill From
+          </h3>
           <InputField
             label="Business Name"
             name="businessName"
@@ -300,7 +312,10 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
         </div>
 
         {formData.items.map((item, index) => (
-          <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <div
+            key={index}
+            className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
+          >
             <InputField
               label="Item Name"
               name="name"
@@ -333,7 +348,11 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
               value={item.taxPercent}
               onChange={(e) => handleInputChange(e, "items", index)}
             />
-            <Button type="button" variant="ghost" onClick={() => handleRemoveItem(index)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => handleRemoveItem(index)}
+            >
               Remove
             </Button>
           </div>
@@ -353,6 +372,121 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
           <span>Total</span>
           <span>${total.toFixed(2)}</span>
         </div>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-lg shadow-sm shadow-gray-100 overflow-hidden ">
+        <div className="p-4 sm:p-6 border-b border-slate-200 bg-slate-50">
+          <h3 className="text-lg font-semibold text-slate-900">Items</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+            <tr>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Item</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Qty</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Price</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tax (%)</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Total </th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"> </th>
+            </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-200">
+              {formData.items.map((item, index) => (
+                <tr key={index} className="hover:bg-slate-50">
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="text"
+                      name="name"
+                      value={item.name}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
+                      placeholder="Item name"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={item.quantity}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
+                      placeholder="1"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="number"
+                      name="unitPrice"
+                      value={item.unitPrice}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
+                      placeholder="00.0"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="number"
+                      name="taxPercent"
+                      value={item.taxPercent}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
+                      placeholder="0"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4 text-sm text-slate-500">
+                    $
+                    {(
+                      (item.quantity || 0) *
+                      (item.unitPrice || 0) *
+                      (1 + (item.taxPercent || 0) / 100)
+                    ).toFixed(2)}
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="small"
+                      onClick={() => handleRemoveItem(index)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-4 sm:p-6 border-t border-slate-200">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleAddItem}
+            icon={Plus}
+          >
+            Add
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border-slate-700 space-y-4">
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Notes</h3>
+                <TextAreaField label="Notes" name="notes" value={formData.notes} onChange={handleInputChange}/>
+                <SelectedField 
+                label="Payment Terms"
+                name="paymentTerms"
+                value={formData.paymentTerms}
+                onChange={handleInputChange}
+                options={["Net 15","Net 30","Net 60", "Due no receipt"]} />
+              </div>
+              <div className="bg-white p-6 rounded-lg shodow-sm shadow-gray-100 border border-slate-200 flex flex-col justify-center">
+                 <div className="space-y-4">
+                  <div className="flex justify-between text-sm text-slate-600"><p>SubTotal: </p><p>${subtotal.toFixed(2)}</p></div>
+                  <div className="flex justify-between text-sm text-slate-600"><p>Tax: </p><p>${taxTotal.toFixed(2)}</p></div>
+                  <div className="flex justify-between text-lg font-semibold  text-slate-900 border-t border-slate-200 pt-4 mt-4"><p>Total: </p><p>${total.toFixed(2)}</p></div>       
+                 </div>
+              </div>
+
       </div>
     </form>
   );

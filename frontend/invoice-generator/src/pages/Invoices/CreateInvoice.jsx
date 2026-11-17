@@ -183,6 +183,35 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    const itemsWithTotal = formData.items.map((item) => ({
+      ...item,
+      total:
+        (item.quantity || 0) *
+        (item.unitPrice || 0) *
+        (1 + (item.taxPercent || 0) / 100),
+    }));
+    const finalFormData = {
+      ...formData,
+      items: itemsWithTotal,
+      subtotal,
+      taxTotal,
+      total,
+    };
+
+    if (onSave) {
+      await onSave(finalFormData);
+    } else {
+      try {
+        await axiosInstance.post(API_PATHS.INVOICE.CREATE, finalFormData);
+        toast.success("Invoice created successfully");
+        navigate("/invoices");
+      } catch (error) {
+        toast.error("Failed to create invoice.");
+        console.error(error);
+      }
+    }
+    setLoading(false);
   };
 
   return (
@@ -281,77 +310,6 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
             value={formData.billTo.phone}
             onChange={(e) => handleInputChange(e, "billTo")}
           />
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Items</h3>
-          <Button type="button" variant="outline" onClick={handleAddItem}>
-            Add Item
-          </Button>
-        </div>
-
-        {formData.items.map((item, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
-          >
-            <InputField
-              label="Item Name"
-              name="name"
-              value={item.name}
-              onChange={(e) => handleInputChange(e, "items", index)}
-            />
-            <InputField
-              label="Qty"
-              type="number"
-              min="1"
-              name="quantity"
-              value={item.quantity}
-              onChange={(e) => handleInputChange(e, "items", index)}
-            />
-            <InputField
-              label="Unit Price"
-              type="number"
-              min="0"
-              step="0.01"
-              name="unitPrice"
-              value={item.unitPrice}
-              onChange={(e) => handleInputChange(e, "items", index)}
-            />
-            <InputField
-              label="Tax %"
-              type="number"
-              min="0"
-              step="0.01"
-              name="taxPercent"
-              value={item.taxPercent}
-              onChange={(e) => handleInputChange(e, "items", index)}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => handleRemoveItem(index)}
-            >
-              Remove
-            </Button>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200">
-        <div className="flex justify-between text-slate-700 mb-2">
-          <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-slate-700 mb-2">
-          <span>Tax</span>
-          <span>${taxTotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-lg font-semibold text-slate-900">
-          <span>Total</span>
-          <span>${total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -456,14 +414,16 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
             onClick={handleAddItem}
             icon={Plus}
           >
-            Add
+            Add Item
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border-slate-700 space-y-4">
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">Notes</h3>
+        <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4">
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            Notes & Terms
+          </h3>
           <TextAreaField
             label="Notes"
             name="notes"

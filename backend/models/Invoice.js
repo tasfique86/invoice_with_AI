@@ -19,7 +19,7 @@ const invoiceSchema = new mongoose.Schema(
     invoiceDate: { type: Date, default: Date.now },
     dueDate: { type: Date },
     billFrom: {
-      busniessName: String,
+      businessName: String,
       email: String,
       address: String,
       phone: String,

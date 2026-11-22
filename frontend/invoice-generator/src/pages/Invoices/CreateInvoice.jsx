@@ -47,7 +47,8 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
     useState(!existingInvoice);
 
   useEffect(() => {
-    const aiData = location.state?.aiData;
+    const rawAiData = location.state?.aiData;
+    const aiData = rawAiData?.data || rawAiData;
 
     if (aiData) {
       setFormData((prev) => ({
@@ -56,9 +57,16 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
           clientName: aiData.clientName || "",
           email: aiData.email || "",
           address: aiData.address || "",
-          phone: "",
+          phone: aiData.phone || "",
         },
-        items: aiData.items?.length ? aiData.items : [defaultItem],
+        items: aiData.items?.length
+          ? aiData.items.map((item) => ({
+              name: item.name || "",
+              quantity: Number(item.quantity) || 1,
+              unitPrice: Number(item.unitPrice) || 0,
+              taxPercent: Number(item.taxPercent) || 0,
+            }))
+          : [defaultItem],
       }));
     }
     if (existingInvoice) {
@@ -68,29 +76,6 @@ const CreateInvoice = ({ existingInvoice, onSave } = {}) => {
         dueDate: moment(existingInvoice.dueDate).format("YYYY-MM-DD"),
       });
     } else {
-      // const generateNewInvoiceNumber = async () => {
-      //   setIsGeneratingNumber(true);
-      //   try{
-      //     const response = await axiosInstance.get(API_PATHS.INVOICE.GET_ALL);
-      //     const invoices =response.data;
-
-      //     let maxNum = 0;
-
-      //     invoices.forEach((inv)=> {
-      //       const num = parseInt(inv.invoiceNumber.split("-")[1]);
-      //       if(!isNaN(num) && num> maxNum) maxNum = num;
-      //     });
-      //     const newInvoiceNumber = `INV-${String(maxNum+1).padStart(3,"0")}`;
-      //     setFormData((prev) => ({...prev, invoiceNumber: newInvoiceNumber}));
-      //   } catch (error){
-      //     console.error("Failed to generate invoice number", error);
-      //     setFormData((prev)=> ({
-      //       ...prev,
-      //       invoiceNumber: `INV-${Date.now().toString().slice(-5)}`;
-      //     }));
-      //   }
-      //   setIsGeneratingNumber(false);
-      // }
       const generateNewInvoiceNumber = async () => {
         setIsGeneratingNumber(true);
         try {
